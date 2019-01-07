@@ -121,6 +121,7 @@ public class FileSystemXmlApplicationContext extends AbstractXmlApplicationConte
 		this(configLocations, refresh, null);
 	}
 
+
 	/**
 	 * Create a new FileSystemXmlApplicationContext with the given parent,
 	 * loading the definitions from the given XML files.
@@ -131,6 +132,8 @@ public class FileSystemXmlApplicationContext extends AbstractXmlApplicationConte
 	 * @param parent the parent context
 	 * @throws BeansException if context creation failed
 	 * @see #refresh()
+	 * Spring加载的入口
+	 * refresh()方法就是这个ioc容器加载的入口，该方法的具体实现在AbstractApplicationContext。
 	 */
 	public FileSystemXmlApplicationContext(
 			String[] configLocations, boolean refresh, @Nullable ApplicationContext parent)
