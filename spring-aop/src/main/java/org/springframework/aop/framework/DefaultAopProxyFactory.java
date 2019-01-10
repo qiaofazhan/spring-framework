@@ -48,20 +48,32 @@ public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
 
 	@Override
 	public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException {
+		// (我没用过这个optimize，默认false) || (proxy-target-class=true) || (没有接口)
 		if (config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config)) {
 			Class<?> targetClass = config.getTargetClass();
 			if (targetClass == null) {
 				throw new AopConfigException("TargetSource cannot determine target class: " +
 						"Either an interface or a target is required for proxy creation.");
 			}
+			// 如果要代理的类本身就是接口，也会用 JDK 动态代理
 			if (targetClass.isInterface() || Proxy.isProxyClass(targetClass)) {
 				return new JdkDynamicAopProxy(config);
 			}
+			//返回cglib代理
 			return new ObjenesisCglibAopProxy(config);
 		}
 		else {
+			// 如果有接口，会跑到这个分支
 			return new JdkDynamicAopProxy(config);
 		}
+
+		/*如果被代理的目标类实现了一个或多个自定义的接口，那么就会使用 JDK 动态代理.
+		如果没有实现任何接口，会使用 CGLIB 实现代理，如果设置了 proxy-target-class="true"，那么都会使用 CGLIB。
+		JDK 动态代理基于接口，所以只有接口中的方法会被增强。
+		而 CGLIB 基于类继承，需要注意就是如果方法使用了 final 修饰，或者是 private 方法，是不能被增强的。
+		*/
+
+		//回到ProxyFactory的getProxy(@Nullable ClassLoader classLoader)方法中的第2步createAopProxy().getProxy(classLoader)
 	}
 
 	/**
@@ -69,6 +81,8 @@ public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
 	 * {@link org.springframework.aop.SpringProxy} interface specified
 	 * (or no proxy interfaces specified at all).
 	 */
+
+	// 判断是否有实现自定义的接口
 	private boolean hasNoUserSuppliedProxyInterfaces(AdvisedSupport config) {
 		Class<?>[] ifcs = config.getProxiedInterfaces();
 		return (ifcs.length == 0 || (ifcs.length == 1 && SpringProxy.class.isAssignableFrom(ifcs[0])));

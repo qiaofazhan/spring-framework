@@ -35,6 +35,13 @@ import org.springframework.lang.Nullable;
  * @author Rod Johnson
  * @author Rob Harrop
  */
+/*
+ DefaultAdvisorAutoProxyCreator ,它能实现自动将所有的 advisor 生效。
+DefaultAdvisorAutoProxyCreator 最后居然是一个 BeanPostProcessor，
+BeanPostProcessor 的两个方法，分别在 init-method 的前后得到执行。
+，DefaultAdvisorAutoProxyCreator 的继承结构中，postProcessAfterInitialization() 方法在其父类 AbstractAutoProxyCreator 这一层被覆写了。
+转到AbstractAutoProxyCreator中查看postProcessAfterInitialization。
+ */
 @SuppressWarnings("serial")
 public class DefaultAdvisorAutoProxyCreator extends AbstractAdvisorAutoProxyCreator implements BeanNameAware {
 
