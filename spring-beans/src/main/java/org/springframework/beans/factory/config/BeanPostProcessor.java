@@ -55,6 +55,21 @@ public interface BeanPostProcessor {
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet
 	 */
+	/**
+	 * 1.在执行registerBeanPostProcessors(beanFactory);之前直接注册到BeanFactory中的顺序不变
+	 * 2.BeanPostProcessorChecker紧随此前直接注册到BeanFacotry中BeanPostProcessor
+	 * 3.实现了PriorityOrdered接口的BeanPostProcessor (根据getOrder()排序)
+	 * 4.实现了Ordered接口的BeanPostProcessor（根据getOrder()排序）
+	 * 5.未实现关于Order接口的普通BeanPostProcessor
+	 * 6.所有类型为BeanPostProcessor的子类型的MergedBeanDefinitionPostProcessor重新注册，使它们的执行顺序在BeanPostProcessor直接类型的后面
+	 * 7.ApplicationListenerDetector这个BeanPostProcessor放到最最后面
+	 *
+
+	 * @param bean
+	 * @param beanName
+	 * @return
+	 * @throws BeansException
+	 */
 	@Nullable
 	default Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		return bean;
