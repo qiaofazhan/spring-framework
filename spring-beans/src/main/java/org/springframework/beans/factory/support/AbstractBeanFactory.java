@@ -250,6 +250,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// 注意跟着这个，这个是返回值
 		Object bean;
 
+
 		// Eagerly check singleton cache for manually registered singletons.
 
 		// 检查下是不是已经创建过了

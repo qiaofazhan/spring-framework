@@ -70,6 +70,7 @@ public interface BeanPostProcessor {
 	 * @return
 	 * @throws BeansException
 	 */
+	//继续往下  ApplicationContextAwareProcessor中   调用了其他aware
 	@Nullable
 	default Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		return bean;

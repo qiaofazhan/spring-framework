@@ -416,6 +416,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object result = existingBean;
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {
+			//继续往下  ApplicationContextAwareProcessor中   调用了其他aware
 			Object current = processor.postProcessBeforeInitialization(result, beanName);
 			if (current == null) {
 				return result;
@@ -1776,9 +1777,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @see #applyBeanPostProcessorsAfterInitialization
 	 */
 	protected Object initializeBean(final String beanName, final Object bean, @Nullable RootBeanDefinition mbd) {
-		//执行顺序   BeanFactoryPostProcessor----> aware--> postProcessBefore--->afterPropertiesSet--->CustomInitMethod---->PostProcessorsAfter   ---->容器监听事件
+		//执行顺序   BeanFactoryPostProcessor----> 核心aware--> postProcessBefore--->afterPropertiesSet--->CustomInitMethod---->PostProcessorsAfter   ---->容器监听事件
 		if (System.getSecurityManager() != null) {
 			AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+				// 如果 bean 实现了 BeanNameAware、BeanClassLoaderAware 或 BeanFactoryAware 接口，回调
 				invokeAwareMethods(beanName, bean);
 				return null;
 			}, getAccessControlContext());

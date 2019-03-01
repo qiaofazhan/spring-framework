@@ -737,6 +737,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		if (!beanFactory.containsLocalBean(SYSTEM_ENVIRONMENT_BEAN_NAME)) {//就是jdk的System.getEnv()
 			beanFactory.registerSingleton(SYSTEM_ENVIRONMENT_BEAN_NAME, getEnvironment().getSystemEnvironment());
 		}
+		
 	}
 
 	/**
