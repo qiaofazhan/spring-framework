@@ -520,7 +520,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			// Tell the subclass to refresh the internal bean factory.
 			//实例化beanFactory（组合模式，是你还有你，一切拜托你），这里是在子类中启动refreshBeanFactory()的地方，
 			//在类AbstractRefreshableApplicationContext中实现。本质就是创建map，将xml解析成BeanDefinition.java，并放进map中
-			//！！！！在 AbstractApplicationContext中定义一个ApplicationContext类型的parent，在AbstractRefreshableApplicationContext中定义了一个beanFactor。
+			//！！！！在 AbstractApplicationContext中定义一个ApplicationContext类型的parent，在AbstractRefreshableApplicationContext中定义了一个beanFactory。
 			// 所以这个时候的有3个Spring容器了：this、internal beanFactory、parent。
 
 			// 这步比较关键，这步完成后，配置文件就会解析成一个个 Bean 定义，注册到 BeanFactory 中，
