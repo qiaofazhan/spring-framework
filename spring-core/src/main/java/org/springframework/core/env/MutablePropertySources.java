@@ -41,6 +41,7 @@ import org.springframework.lang.Nullable;
  */
 public class MutablePropertySources implements PropertySources {
 
+	//qfz> 在list中越靠前，优先级越高。
 	private final List<PropertySource<?>> propertySourceList = new CopyOnWriteArrayList<>();
 
 
@@ -93,6 +94,7 @@ public class MutablePropertySources implements PropertySources {
 	/**
 	 * Add the given property source object with highest precedence.
 	 */
+	//qfz>  将给定的（传入的）属性源指定最高优先级，即添加到list头部；在list中越靠前，优先级越高。
 	public void addFirst(PropertySource<?> propertySource) {
 		removeIfPresent(propertySource);
 		this.propertySourceList.add(0, propertySource);
@@ -101,6 +103,7 @@ public class MutablePropertySources implements PropertySources {
 	/**
 	 * Add the given property source object with lowest precedence.
 	 */
+	//qfz>  将给定的（传入的）属性源指定最低优先级，即添加到list尾部；在list中越靠前，优先级越高。
 	public void addLast(PropertySource<?> propertySource) {
 		removeIfPresent(propertySource);
 		this.propertySourceList.add(propertySource);
@@ -110,6 +113,8 @@ public class MutablePropertySources implements PropertySources {
 	 * Add the given property source object with precedence immediately higher
 	 * than the named relative property source.
 	 */
+	//在list中越靠前，优先级越高。
+	//qfz>  将给定的（传入的）属性源（propertySource）指定相对优先级，相对传入的属性源名称（relativePropertySourceName）高一级，即添加到relativePropertySourceName前面
 	public void addBefore(String relativePropertySourceName, PropertySource<?> propertySource) {
 		assertLegalRelativeAddition(relativePropertySourceName, propertySource);
 		removeIfPresent(propertySource);
@@ -121,6 +126,7 @@ public class MutablePropertySources implements PropertySources {
 	 * Add the given property source object with precedence immediately lower
 	 * than the named relative property source.
 	 */
+	//qfz>  将给定的（传入的）属性源（propertySource）指定相对优先级，相对传入的属性源名称（relativePropertySourceName）低一级，即添加到relativePropertySourceName后面
 	public void addAfter(String relativePropertySourceName, PropertySource<?> propertySource) {
 		assertLegalRelativeAddition(relativePropertySourceName, propertySource);
 		removeIfPresent(propertySource);
@@ -131,6 +137,7 @@ public class MutablePropertySources implements PropertySources {
 	/**
 	 * Return the precedence of the given property source, {@code -1} if not found.
 	 */
+	//qfz>  返回指定属性源的优先级，即索引。
 	public int precedenceOf(PropertySource<?> propertySource) {
 		return this.propertySourceList.indexOf(propertySource);
 	}
@@ -152,6 +159,7 @@ public class MutablePropertySources implements PropertySources {
 	 * @throws IllegalArgumentException if no property source with the given name is present
 	 * @see #contains
 	 */
+	//qfz>  替换属性源
 	public void replace(String name, PropertySource<?> propertySource) {
 		int index = assertPresentAndGetIndex(name);
 		this.propertySourceList.set(index, propertySource);
@@ -190,6 +198,7 @@ public class MutablePropertySources implements PropertySources {
 	/**
 	 * Add the given property source at a particular index in the list.
 	 */
+	//qfz>  在指定索引（优先级）处，添加属性源；即添加属性源并指定优先级
 	private void addAtIndex(int index, PropertySource<?> propertySource) {
 		removeIfPresent(propertySource);
 		this.propertySourceList.add(index, propertySource);
@@ -200,6 +209,7 @@ public class MutablePropertySources implements PropertySources {
 	 * @param name {@linkplain PropertySource#getName() name of the property source} to find
 	 * @throws IllegalArgumentException if the named property source is not present
 	 */
+	//qfz>  返回指定名称的属性源的优先级（索引）
 	private int assertPresentAndGetIndex(String name) {
 		int index = this.propertySourceList.indexOf(PropertySource.named(name));
 		if (index == -1) {
