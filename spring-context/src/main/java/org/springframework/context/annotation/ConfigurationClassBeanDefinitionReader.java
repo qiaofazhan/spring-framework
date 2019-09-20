@@ -114,6 +114,8 @@ class ConfigurationClassBeanDefinitionReader {
 	public void loadBeanDefinitions(Set<ConfigurationClass> configurationModel) {
 		TrackedConditionEvaluator trackedConditionEvaluator = new TrackedConditionEvaluator();
 		for (ConfigurationClass configClass : configurationModel) {
+			//qfz ---->在解析方法loadBeanDefinitionsForConfigurationClass()中，会获得配置类中定义bean的所有方法，
+			//并调用loadBeanDefinitionsForBeanMethod()方法来进行循环解析：
 			loadBeanDefinitionsForConfigurationClass(configClass, trackedConditionEvaluator);
 		}
 	}
@@ -125,10 +127,10 @@ class ConfigurationClassBeanDefinitionReader {
 	private void loadBeanDefinitionsForConfigurationClass(
 			ConfigurationClass configClass, TrackedConditionEvaluator trackedConditionEvaluator) {
 
-		if (trackedConditionEvaluator.shouldSkip(configClass)) {
+		if (trackedConditionEvaluator.shouldSkip(configClass)) {//条件注解解析后不匹配
 			String beanName = configClass.getBeanName();
 			if (StringUtils.hasLength(beanName) && this.registry.containsBeanDefinition(beanName)) {
-				this.registry.removeBeanDefinition(beanName);
+				this.registry.removeBeanDefinition(beanName);//从beanFactory中移除这个不匹配的Configuration的BeanDefinition
 			}
 			this.importRegistry.removeImportingClass(configClass.getMetadata().getClassName());
 			return;
@@ -137,6 +139,8 @@ class ConfigurationClassBeanDefinitionReader {
 		if (configClass.isImported()) {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
+
+		//	qfz---->	，获得配置类中定义bean的所有方法，并loadBeanDefinitionsForBeanMethod()方法来进行循环解析，解析时会执行如下校验方法，也正是条件注解的入口：
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
@@ -178,6 +182,7 @@ class ConfigurationClassBeanDefinitionReader {
 		String methodName = metadata.getMethodName();
 
 		// Do we need to mark the bean as skipped by its condition?
+		//qfz---->
 		if (this.conditionEvaluator.shouldSkip(metadata, ConfigurationPhase.REGISTER_BEAN)) {
 			configClass.skippedBeanMethods.add(methodName);
 			return;

@@ -137,7 +137,9 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 
 			// 下面这两个方法很重要。
 			customizeBeanFactory(beanFactory);//设置 BeanFactory 的两个配置属性：是否允许bean定义重写（覆盖），是否允许循环引用
-			loadBeanDefinitions(beanFactory);//加载bean定义：xml解析成BeanDefinition.java，并放进map中
+
+			//加载bean定义：基于xml或者注解解析成BeanDefinition.java，并放进map中
+			loadBeanDefinitions(beanFactory);//qfz  ------->
 			synchronized (this.beanFactoryMonitor) {
 				this.beanFactory = beanFactory;
 			}
@@ -281,6 +283,8 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * @see org.springframework.beans.factory.support.PropertiesBeanDefinitionReader
 	 * @see org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 	 */
+	//  qfz   ---->AbstractXmlApplicationContext
+	// qfz   ----->AnnotationConfigWebApplicationContext
 	protected abstract void loadBeanDefinitions(DefaultListableBeanFactory beanFactory)
 			throws BeansException, IOException;
 

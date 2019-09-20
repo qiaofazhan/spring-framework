@@ -49,23 +49,31 @@ import org.springframework.util.ClassUtils;
  */
 final class ConfigurationClass {
 
+	//带有该配置类注解信息的ClassMetadata,可获取类和类上面注解的信息
 	private final AnnotationMetadata metadata;
 
+	//类的来源
 	private final Resource resource;
 
+	//该类的bean name
 	@Nullable
 	private String beanName;
 
+	//是被哪个配置类@Import的
 	private final Set<ConfigurationClass> importedBy = new LinkedHashSet<>(1);
 
+	//自身和祖先的@Bean方法
 	private final Set<BeanMethod> beanMethods = new LinkedHashSet<>();
 
+	//保存@ImportResource location与reader属性，后会使用reader解析location代表的资源转换一波配置类
 	private final Map<String, Class<? extends BeanDefinitionReader>> importedResources =
 			new LinkedHashMap<>();
 
+	//@Import value属性是ImportBeanDefinitionRegistrar
 	private final Map<ImportBeanDefinitionRegistrar, AnnotationMetadata> importBeanDefinitionRegistrars =
 			new LinkedHashMap<>();
 
+	//记录不满足@Conditional value属性指定接口的@Bean方法，因为子类重写方法可能不满足条件，固需要记录，解析到父类就可直接跳过
 	final Set<String> skippedBeanMethods = new HashSet<>();
 
 

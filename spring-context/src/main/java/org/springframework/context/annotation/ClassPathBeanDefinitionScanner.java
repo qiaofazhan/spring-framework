@@ -136,7 +136,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 */
 	public ClassPathBeanDefinitionScanner(BeanDefinitionRegistry registry, boolean useDefaultFilters,
 			Environment environment) {
-
+		//qfz   ------>
 		this(registry, useDefaultFilters, environment,
 				(registry instanceof ResourceLoader ? (ResourceLoader) registry : null));
 	}
@@ -156,13 +156,19 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * @param resourceLoader the {@link ResourceLoader} to use
 	 * @since 4.3.6
 	 */
+	/*
+	一个bean定义扫描程序类，它检测类路径上的bean候选者，使用给定的注册表（BeanFactory或ApplicationContext）注册相应的bean定义。
+		通过可配置的类型过滤器检测候选类。 默认过滤器包括使用Spring的@Component，@Repository，@Service或@Controller构造型注释的类。
+	 */
 	public ClassPathBeanDefinitionScanner(BeanDefinitionRegistry registry, boolean useDefaultFilters,
 			Environment environment, @Nullable ResourceLoader resourceLoader) {
 
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		this.registry = registry;
 
+		// 默认true 使用new AnnotationTypeFilter(Component.class)扫描指定类型.
 		if (useDefaultFilters) {
+			//qfz  ----->
 			registerDefaultFilters();
 		}
 		setEnvironment(environment);
@@ -250,6 +256,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	public int scan(String... basePackages) {
 		int beanCountAtScanStart = this.registry.getBeanDefinitionCount();
 
+		//qfz  ------>
 		doScan(basePackages);
 
 		// Register annotation config processors, if necessary.
@@ -268,10 +275,14 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * @param basePackages the packages to check for annotated classes
 	 * @return set of beans registered if any for tooling registration purposes (never {@code null})
 	 */
+	/**
+	 * 扫描bean。这个很重要，如果想要自定义扫描，这个方法就很有参考价值。
+	 */
 	protected Set<BeanDefinitionHolder> doScan(String... basePackages) {
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
 		for (String basePackage : basePackages) {
+			//----->
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
 			for (BeanDefinition candidate : candidates) {
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
@@ -288,6 +299,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 					definitionHolder =
 							AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 					beanDefinitions.add(definitionHolder);
+					// 将扫描的候选类注册到bean factory
 					registerBeanDefinition(definitionHolder, this.registry);
 				}
 			}

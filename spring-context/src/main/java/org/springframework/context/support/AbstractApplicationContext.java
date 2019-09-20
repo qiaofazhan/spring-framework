@@ -549,10 +549,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Initialize message source for this context.
 				// 初始化当前 ApplicationContext 的 MessageSource，国际化这里就不展开说了，不然没完没了了
+				//为容器中注册一个名为messageSource的 DelegatingMessageSource的bean用于i18n。
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
-				//初始化当前 ApplicationContext 的事件广播器，这里也不展开了
+				//初始化当前 ApplicationContext 的事件广播器，这里也不展开了;注册applicationEventMulticaster,如果在上下文中没有定义，则使用SimpleApplicationEventMulticaster。
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
@@ -562,6 +563,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Check for listener beans and register them.
 				//注册listener beans， 监听器需要实现 ApplicationListener 接口。这也不是重点，过
+				//将容器中的所有ApplicationListener添加到ApplicationEventMulticaster中以便所有ApplicationListener可以监听到消息。
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
@@ -571,6 +573,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Last step: publish corresponding event.
 				// 最后，广播事件，ApplicationContext 初始化完成
+				//注册LifecycleProcessor，发布ContextRefreshedEvent。
 				finishRefresh();
 			}
 
@@ -654,7 +657,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
 		// 关闭旧的internal BeanFactory (如果有)，创建新的internal BeanFactory，加载 Bean 定义、注册 Bean 等等
 		//注意我这里用了internal这个词！！！
-		refreshBeanFactory();
+		refreshBeanFactory();  //qfz  ------>
 		// 返回刚刚创建的 BeanFactory
 		return getBeanFactory();
 	}
@@ -747,6 +750,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * BeanPostProcessors etc in certain ApplicationContext implementations.
 	 * @param beanFactory the bean factory used by the application context
 	 */
+	//qfz  ----->AbstractRefreshableWebApplicationContext
 	protected void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 	}
 
@@ -758,7 +762,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
 		//注册并执行所有的BeanFactoryPostProcessors。
 		// 因为BeanFactoryPostProcessor本质也是bean，所以在Spring容器注册的bean定义中扫描BeanFactoryPostProcessors并注册，这个过程中Spring容器创建了BeanFactoryPostProcessors对应的实例。
-
+        //注意，会解析所有的@Configuration注解标注的类，将它们解析成Beandefinition
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime
@@ -777,6 +781,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) {
 		//注册所有用户自定义的的BeanPostProcessors。（其实在prepareBeanFactory阶段，Spring已经默认注册了几个BeanPostProcessor）
 		// 因为BeanPostProcessor本质也是bean，所以在Spring容器注册的bean定义中扫描BeanPostProcessors并注册，这个过程中Spring容器创建了BeanPostProcessors对应的实例。
+		//qfz  ----->
 		PostProcessorRegistrationDelegate.registerBeanPostProcessors(beanFactory, this);
 	}
 
@@ -955,15 +960,19 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		clearResourceCaches();
 
 		// Initialize lifecycle processor for this context.
+		//  如果没有配置beanname是lifecycleProcessor则使用DefaultLifecycleProcessor
 		initLifecycleProcessor();
 
 		// Propagate refresh to lifecycle processor first.
+		// 对于DefaultLifecycleProcessor调用其startBeans(true)方法，会中出容器中所有的Lifecycle调用它的start()方法
 		getLifecycleProcessor().onRefresh();
 
 		// Publish the final event.
+		// 向监听器发送广播，容器启动事件
 		publishEvent(new ContextRefreshedEvent(this));
 
 		// Participate in LiveBeansView MBean, if active.
+		// 如果配置了MBeanServer，就完成在MBeanServer上的注册
 		LiveBeansView.registerApplicationContext(this);
 	}
 
@@ -1434,6 +1443,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @throws IllegalStateException if already initialized and multiple refresh
 	 * attempts are not supported
 	 */
+	//qfz  ------>AbstractRefreshableApplicationContext
 	protected abstract void refreshBeanFactory() throws BeansException, IllegalStateException;
 
 	/**

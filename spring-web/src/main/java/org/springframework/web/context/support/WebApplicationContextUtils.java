@@ -217,6 +217,8 @@ public abstract class WebApplicationContextUtils {
 	 * @param servletContext the ServletContext that we're running within
 	 * @param servletConfig the ServletConfig
 	 */
+
+   //使用WebApplicationContext的给定BeanFactory注册特定于Web的环境bean（“contextParameters”，“contextAttributes”）。
 	public static void registerEnvironmentBeans(ConfigurableListableBeanFactory bf,
 			@Nullable ServletContext servletContext, @Nullable ServletConfig servletConfig) {
 

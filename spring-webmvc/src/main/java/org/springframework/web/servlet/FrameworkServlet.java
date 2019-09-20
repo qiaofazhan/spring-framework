@@ -517,6 +517,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * Overridden method of {@link HttpServletBean}, invoked after any bean properties
 	 * have been set. Creates this servlet's WebApplicationContext.
 	 */
+	//创建WebApplicationContext的入口
 	@Override
 	protected final void initServletBean() throws ServletException {
 		getServletContext().log("Initializing Spring " + getClass().getSimpleName() + " '" + getServletName() + "'");
@@ -526,6 +527,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		long startTime = System.currentTimeMillis();
 
 		try {
+			//qfz  ------->初始化Spring容器
 			this.webApplicationContext = initWebApplicationContext();
 			initFrameworkServlet();
 		}
@@ -556,6 +558,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @see #setContextClass
 	 * @see #setContextConfigLocation
 	 */
+	// qfz    ------>初始化spring容器
 	protected WebApplicationContext initWebApplicationContext() {
 		WebApplicationContext rootContext =
 				WebApplicationContextUtils.getWebApplicationContext(getServletContext());
@@ -574,6 +577,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 						// the root application context (if any; may be null) as the parent
 						cwac.setParent(rootContext);
 					}
+					//------>初始化spring容器
 					configureAndRefreshWebApplicationContext(cwac);
 				}
 			}
@@ -587,6 +591,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		}
 		if (wac == null) {
 			// No context instance is defined for this servlet -> create a local one
+			//------>初始化spring容器
 			wac = createWebApplicationContext(rootContext);
 		}
 
@@ -647,6 +652,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @return the WebApplicationContext for this servlet
 	 * @see org.springframework.web.context.support.XmlWebApplicationContext
 	 */
+	//qfz  ------>创建spring容器
 	protected WebApplicationContext createWebApplicationContext(@Nullable ApplicationContext parent) {
 		Class<?> contextClass = getContextClass();
 		if (!ConfigurableWebApplicationContext.class.isAssignableFrom(contextClass)) {
@@ -664,11 +670,13 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		if (configLocation != null) {
 			wac.setConfigLocation(configLocation);
 		}
+		//qfz  ------>刷新spring容器
 		configureAndRefreshWebApplicationContext(wac);
 
 		return wac;
 	}
 
+	//qfz  ------>wac.refresh()------>AbstractApplicationContext.refresh
 	protected void configureAndRefreshWebApplicationContext(ConfigurableWebApplicationContext wac) {
 		if (ObjectUtils.identityToString(wac).equals(wac.getId())) {
 			// The application context id is still set to its original default value
@@ -821,11 +829,13 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @see #getWebApplicationContext()
 	 * @see org.springframework.context.ConfigurableApplicationContext#refresh()
 	 */
+	//qfz  ---->刷新spring父容器（SpringMVC有父子容器）
 	public void refresh() {
 		WebApplicationContext wac = getWebApplicationContext();
 		if (!(wac instanceof ConfigurableApplicationContext)) {
 			throw new IllegalStateException("WebApplicationContext does not support refresh: " + wac);
 		}
+		//qfz   ----->AbstractApplicationContext.refresh
 		((ConfigurableApplicationContext) wac).refresh();
 	}
 

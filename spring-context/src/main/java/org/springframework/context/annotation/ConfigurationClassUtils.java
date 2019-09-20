@@ -80,26 +80,31 @@ abstract class ConfigurationClassUtils {
 	 */
 	public static boolean checkConfigurationClassCandidate(
 			BeanDefinition beanDef, MetadataReaderFactory metadataReaderFactory) {
-
+		// 1. 获取类名,如果类名不存在则返回false
 		String className = beanDef.getBeanClassName();
 		if (className == null || beanDef.getFactoryMethodName() != null) {
 			return false;
 		}
-
+		// 2. 获得AnnotationMetadata
 		AnnotationMetadata metadata;
 		if (beanDef instanceof AnnotatedBeanDefinition &&
 				className.equals(((AnnotatedBeanDefinition) beanDef).getMetadata().getClassName())) {
 			// Can reuse the pre-parsed metadata from the given BeanDefinition...
+			// 2.1 如果BeanDefinition 是 AnnotatedBeanDefinition的实例,并且className 和 BeanDefinition中 的元数据 的类名相同
+			// 则直接从BeanDefinition 获得Metadata
 			metadata = ((AnnotatedBeanDefinition) beanDef).getMetadata();
 		}
 		else if (beanDef instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) beanDef).hasBeanClass()) {
 			// Check already loaded Class if present...
 			// since we possibly can't even load the class file for this Class.
 			Class<?> beanClass = ((AbstractBeanDefinition) beanDef).getBeanClass();
+			// 2.2 如果BeanDefinition 是 AnnotatedBeanDefinition的实例,并且beanDef 有 beanClass 属性存在
+			// 则实例化StandardAnnotationMetadata
 			metadata = new StandardAnnotationMetadata(beanClass, true);
 		}
 		else {
 			try {
+				// 2.3 否则 通过MetadataReaderFactory 中的MetadataReader 进行读取
 				MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(className);
 				metadata = metadataReader.getAnnotationMetadata();
 			}
@@ -113,9 +118,12 @@ abstract class ConfigurationClassUtils {
 		}
 
 		if (isFullConfigurationCandidate(metadata)) {
+			// 3.1 如果存在Configuration 注解,则为BeanDefinition 设置configurationClass属性为full
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
+		// 3.2 如果AnnotationMetadata 中有Component,ComponentScan,Import,ImportResource 注解中的任意一个,或者存在被@bean注解的方法,则返回true.
 		else if (isLiteConfigurationCandidate(metadata)) {
+			// 则设置configurationClass属性为lite
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}
 		else {
@@ -123,6 +131,7 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// It's a full or lite configuration candidate... Let's determine the order value, if any.
+		// 4. 如果该类被@Order所注解,则设置order属性为@Order的值
 		Integer order = getOrder(metadata);
 		if (order != null) {
 			beanDef.setAttribute(ORDER_ATTRIBUTE, order);

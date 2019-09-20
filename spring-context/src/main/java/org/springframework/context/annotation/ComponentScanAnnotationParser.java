@@ -73,7 +73,12 @@ class ComponentScanAnnotationParser {
 	}
 
 
+	/**
+	 * 处理@Component注解指定的包下面的组件，如（@service）
+
+	 */
 	public Set<BeanDefinitionHolder> parse(AnnotationAttributes componentScan, final String declaringClass) {
+		//根据@ComponentScan的属性组装一个ClassPathBeanDefinitionScanner，由他负责扫描注册
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(this.registry,
 				componentScan.getBoolean("useDefaultFilters"), this.environment, this.resourceLoader);
 
@@ -112,17 +117,21 @@ class ComponentScanAnnotationParser {
 		Set<String> basePackages = new LinkedHashSet<>();
 		String[] basePackagesArray = componentScan.getStringArray("basePackages");
 		for (String pkg : basePackagesArray) {
+			//支持指定多个包 分隔符",; \t\n"
 			String[] tokenized = StringUtils.tokenizeToStringArray(this.environment.resolvePlaceholders(pkg),
 					ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
 			Collections.addAll(basePackages, tokenized);
 		}
 		for (Class<?> clazz : componentScan.getClassArray("basePackageClasses")) {
+			//支持指定Class所在的包
 			basePackages.add(ClassUtils.getPackageName(clazz));
 		}
+
+		//如果没有指明扫描范围，则使用当前处理的SourceClass所在的包
 		if (basePackages.isEmpty()) {
 			basePackages.add(ClassUtils.getPackageName(declaringClass));
 		}
-
+		//因为当前的declaringClass早已解析完了，需要排除掉
 		scanner.addExcludeFilter(new AbstractTypeHierarchyTraversingFilter(false, false) {
 			@Override
 			protected boolean matchClassName(String className) {

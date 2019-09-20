@@ -192,16 +192,27 @@ public class AnnotationConfigWebApplicationContext extends AbstractRefreshableWe
 	 */
 	@Override
 	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) {
+		//AnnotatedBeanDefinitionReader和ClassPathBeanDefinitionScanner分别用来解析指定的Class和指定包下的Class为BeanDefinition。
+		// ClassPathBeanDefinitionScanner的替代类，用于解析基于注解的bean类的注册;即直接解析指定类
+		//qfz   ------>
 		AnnotatedBeanDefinitionReader reader = getAnnotatedBeanDefinitionReader(beanFactory);
+
+		// 扫描包中的候选者类。即解析指定包下的类。
+		//qfz   ------>
 		ClassPathBeanDefinitionScanner scanner = getClassPathBeanDefinitionScanner(beanFactory);
 
+		//取名器，给Bean起名字的。
 		BeanNameGenerator beanNameGenerator = getBeanNameGenerator();
 		if (beanNameGenerator != null) {
 			reader.setBeanNameGenerator(beanNameGenerator);
 			scanner.setBeanNameGenerator(beanNameGenerator);
+
+			// 将取名器也注册为一个单例bean 默认nul
 			beanFactory.registerSingleton(AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR, beanNameGenerator);
 		}
 
+
+		// 用于解析scope定义的bean的策略接口，默认为null
 		ScopeMetadataResolver scopeMetadataResolver = getScopeMetadataResolver();
 		if (scopeMetadataResolver != null) {
 			reader.setScopeMetadataResolver(scopeMetadataResolver);
@@ -213,6 +224,7 @@ public class AnnotationConfigWebApplicationContext extends AbstractRefreshableWe
 				logger.debug("Registering annotated classes: [" +
 						StringUtils.collectionToCommaDelimitedString(this.annotatedClasses) + "]");
 			}
+			// 注册一个或多个要处理的带注解@Configuration的类    ------>
 			reader.register(ClassUtils.toClassArray(this.annotatedClasses));
 		}
 
@@ -221,9 +233,11 @@ public class AnnotationConfigWebApplicationContext extends AbstractRefreshableWe
 				logger.debug("Scanning base packages: [" +
 						StringUtils.collectionToCommaDelimitedString(this.basePackages) + "]");
 			}
+			// 在指定的基础包中执行扫描  ----->
 			scanner.scan(StringUtils.toStringArray(this.basePackages));
 		}
 
+		// 在AnnotationConfigWebApplicationContext中，configLocations代表@Configuration类名或要扫描的包名
 		String[] configLocations = getConfigLocations();
 		if (configLocations != null) {
 			for (String configLocation : configLocations) {
@@ -260,6 +274,7 @@ public class AnnotationConfigWebApplicationContext extends AbstractRefreshableWe
 	 * @see #getScopeMetadataResolver()
 	 */
 	protected AnnotatedBeanDefinitionReader getAnnotatedBeanDefinitionReader(DefaultListableBeanFactory beanFactory) {
+		//qfz   ------>
 		return new AnnotatedBeanDefinitionReader(beanFactory, getEnvironment());
 	}
 
@@ -274,6 +289,7 @@ public class AnnotationConfigWebApplicationContext extends AbstractRefreshableWe
 	 * @see #getScopeMetadataResolver()
 	 */
 	protected ClassPathBeanDefinitionScanner getClassPathBeanDefinitionScanner(DefaultListableBeanFactory beanFactory) {
+		//qfz   ------>
 		return new ClassPathBeanDefinitionScanner(beanFactory, true, getEnvironment());
 	}
 

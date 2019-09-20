@@ -78,6 +78,7 @@ class ConditionEvaluator {
 	 * @return if the item should be skipped
 	 */
 	public boolean shouldSkip(@Nullable AnnotatedTypeMetadata metadata, @Nullable ConfigurationPhase phase) {
+		// qfz   判断是否有条件注解，;如果这个类没有被@Conditional注解及其子类所修饰，不会skip
 		if (metadata == null || !metadata.isAnnotated(Conditional.class.getName())) {
 			return false;
 		}
@@ -90,6 +91,7 @@ class ConditionEvaluator {
 			return shouldSkip(metadata, ConfigurationPhase.REGISTER_BEAN);
 		}
 
+		//或者获取当前配置类的所有条件注解
 		List<Condition> conditions = new ArrayList<>();
 		for (String[] conditionClasses : getConditionClasses(metadata)) {
 			for (String conditionClass : conditionClasses) {
@@ -97,14 +99,16 @@ class ConditionEvaluator {
 				conditions.add(condition);
 			}
 		}
-
+		//根据Order来进行排序
 		AnnotationAwareOrderComparator.sort(conditions);
 
+		//遍历条件注解，开始执行条件注解的流程
 		for (Condition condition : conditions) {
 			ConfigurationPhase requiredPhase = null;
 			if (condition instanceof ConfigurationCondition) {
 				requiredPhase = ((ConfigurationCondition) condition).getConfigurationPhase();
 			}
+			//这里执行条件注解的 condition.matches 方法来进行匹配，返回布尔值
 			if ((requiredPhase == null || requiredPhase == phase) && !condition.matches(this.context, metadata)) {
 				return true;
 			}

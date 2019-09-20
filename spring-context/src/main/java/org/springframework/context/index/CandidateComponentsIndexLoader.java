@@ -80,17 +80,28 @@ public final class CandidateComponentsIndexLoader {
 	 * @throws IllegalArgumentException if any module index cannot
 	 * be loaded or if an error occurs while creating {@link CandidateComponentsIndex}
 	 */
+	/*
+	Spring Framework 5 改进了扫描和识别组件的方法，使大型项目的性能得到提升。
+	目前，扫描是在编译时执行的，而且向 META-INF/spring.components 文件中的索引文件添加了组件坐标。
+	该索引是通过一个为项目定义的特定于平台的应用程序构建任务来生成的。标有来自 javax 包的注解的组件会添加到索引中，任何带 @Indexed 注解的类或接口都会添加到索引中。
+	Spring 的传统类路径扫描方式没有删除，而是保留为一种后备选择。
+	有许多针对大型代码库的明显性能优势，而托管许多 Spring 项目的服务器也会缩短启动时间。
+	 */
 	@Nullable
 	public static CandidateComponentsIndex loadIndex(@Nullable ClassLoader classLoader) {
 		ClassLoader classLoaderToUse = classLoader;
 		if (classLoaderToUse == null) {
 			classLoaderToUse = CandidateComponentsIndexLoader.class.getClassLoader();
 		}
+		//qfz   ------>doLoadIndex
 		return cache.computeIfAbsent(classLoaderToUse, CandidateComponentsIndexLoader::doLoadIndex);
 	}
 
+	//	CandidateComponentsIndex内部使用MultiValueMap<String, Entry>保存被标记@Indexed的注解与被此注解标记的类的映射，
+	// getCandidateTypes()方法从集合中取得指定包(包含子包)下面被stereotype注解标记的类。
 	@Nullable
 	private static CandidateComponentsIndex doLoadIndex(ClassLoader classLoader) {
+		//在spring.properties中或系统属性中配置spring.index.ignore=true,可忽略这一组件的作用
 		if (shouldIgnoreIndex) {
 			return null;
 		}
