@@ -278,7 +278,7 @@ class ConfigurationClassParser {
 		//==========核心处理逻辑
 		//qfz   循环递归处理：如果有父类，则处理父类。所谓的处理就是填充ConfigurationClass的各个属性
 		do {
-			//处理并返回父类   ----->
+			//处理并返回父类   ----->//核心方法，解析，解析完成后，就在sourceClass 的beanMethods属性中添加@Bean方法信息
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass);
 		}
 		while (sourceClass != null);
@@ -301,7 +301,7 @@ class ConfigurationClassParser {
 	@Nullable
 	protected final SourceClass doProcessConfigurationClass(ConfigurationClass configClass, SourceClass sourceClass)
 			throws IOException {
-		//1.1 如果正在处理的类的注解层次结构里有@Component，则会先处理它的成员内部类;即优先填充它的成员内部类属性。
+		//1.1 如果正在处理的类的注解层次结构里有@Component，则会先处理它的成员内部类;即优先填充它的成员内部类属性。@Configuration里面有@Component
 		if (configClass.getMetadata().isAnnotated(Component.class.getName())) {
 			// Recursively process any member (nested) classes first
 			//----->注册配置类里的成员类
@@ -325,6 +325,7 @@ class ConfigurationClassParser {
 
 
 		//qfz 处理当前配置类上所有的@ComponentScan：并执行 @ComponentScan注解来扫描
+		//处理 @componentScans ，如果发现有@componentScans，就会和xml中的包扫面走相同的路线
 		Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);
 		if (!componentScans.isEmpty() &&
@@ -336,15 +337,24 @@ class ConfigurationClassParser {
 				// Check the set of scanned definitions for any further config classes and parse recursively if needed
 				//qfz  遍历所有的刚扫描到的BeanDefinition
 				for (BeanDefinitionHolder holder : scannedBeanDefinitions) {
+					//循环出每一个componentScan，并将扫描结果解析为scannedBeanDefinitions，
+					//这时候已经调用了doScan方法，将扫面出来的bean全部写入map中
+					//扫描的对象已经全部写在map，如果扫描对象中有@Configuration，又回到了上一章的问题，上一步在doScan中扫面出来的@Configuration bean准备在这一步处理。
 					BeanDefinition bdCand = holder.getBeanDefinition().getOriginatingBeanDefinition();
 					if (bdCand == null) {
 						bdCand = holder.getBeanDefinition();
 					}
-					//qfz   判断是否是配置类（@Configuration  @Component等），如果是配置类就进行解析
+					//qfz   判断是否是配置类（@Configuration），如果是配置类就进行解析
 					if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
 						//qfz  这里是关键，递归解析。重复流程。
 						//即流程为 当前@Configuration--->当前@Configuration指定的@ComponentScan扫描到的Configurations--->递归解析
 						parse(bdCand.getBeanClassName(), holder.getBeanName());
+						//解析，这个方法之前出现过，就是最开始的入口，一个递归
+						//又会调用前面的方法，判断是普通的注入对象还是配置对象
+						//如果有配置对象，在进行分析配置对象的注解，
+						//如果有Scan,import,Bean，直到没有配置对象为止，这个方法就走完了
+						//最终的流程就是，得到配置类，检查配置的配置信息，只有@bean，就将@Bean注入就可以了，有Scan，就先扫描，再走相同的流程，直到这个Scan完成，有import也会保证xml解析完
+						//总的来说这就是一个大的递归，一层一层的解析，一个配置类一个配置类的解析，扫面后者import过程中遇到了配置对象，就先解析这个配置对象
 					}
 				}
 			}

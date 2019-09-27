@@ -52,6 +52,7 @@ import org.springframework.util.StringUtils;
  * @author Juergen Hoeller
  * @since 2.5
  */
+//处理xml配置的标签 <context:component-scan/>
 public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 
 	private static final String BASE_PACKAGE_ATTRIBUTE = "base-package";
@@ -86,7 +87,10 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 				ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
 
 		// Actually scan for bean definitions and register them.
+		// 获取scanner
 		ClassPathBeanDefinitionScanner scanner = configureScanner(parserContext, element);
+		//扫描包，这个时候将获取所有的beanDefinitions详细信息，都是扫描出来的
+		//包括@Component, @Service, @Controller 和 @Configuration配置类
 		Set<BeanDefinitionHolder> beanDefinitions = scanner.doScan(basePackages);
 		registerComponents(parserContext.getReaderContext(), beanDefinitions, element);
 

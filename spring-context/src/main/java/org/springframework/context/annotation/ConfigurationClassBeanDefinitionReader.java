@@ -112,6 +112,7 @@ class ConfigurationClassBeanDefinitionReader {
 	 * with the registry based on its contents.
 	 */
 	public void loadBeanDefinitions(Set<ConfigurationClass> configurationModel) {
+		//条件执行器，到底这个bean要不要注入
 		TrackedConditionEvaluator trackedConditionEvaluator = new TrackedConditionEvaluator();
 		for (ConfigurationClass configClass : configurationModel) {
 			//qfz ---->在解析方法loadBeanDefinitionsForConfigurationClass()中，会获得配置类中定义bean的所有方法，
@@ -127,7 +128,7 @@ class ConfigurationClassBeanDefinitionReader {
 	private void loadBeanDefinitionsForConfigurationClass(
 			ConfigurationClass configClass, TrackedConditionEvaluator trackedConditionEvaluator) {
 
-		if (trackedConditionEvaluator.shouldSkip(configClass)) {//条件注解解析后不匹配
+		if (trackedConditionEvaluator.shouldSkip(configClass)) {//条件注解解析后不匹配,，不进行注入
 			String beanName = configClass.getBeanName();
 			if (StringUtils.hasLength(beanName) && this.registry.containsBeanDefinition(beanName)) {
 				this.registry.removeBeanDefinition(beanName);//从beanFactory中移除这个不匹配的Configuration的BeanDefinition

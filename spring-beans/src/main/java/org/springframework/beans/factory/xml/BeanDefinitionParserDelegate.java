@@ -1373,20 +1373,23 @@ public class BeanDefinitionParserDelegate {
 
 	@Nullable
 	public BeanDefinition parseCustomElement(Element ele) {
+		//------->
 		return parseCustomElement(ele, null);
 	}
 
 	@Nullable
 	public BeanDefinition parseCustomElement(Element ele, @Nullable BeanDefinition containingBd) {
-		String namespaceUri = getNamespaceURI(ele);
+		String namespaceUri = getNamespaceURI(ele);//获取这个http://www.springframework.org/schema/context，没有这个其他标签不能使用
 		if (namespaceUri == null) {
 			return null;
 		}
+		//不同的标签选择不同的处理器
 		NamespaceHandler handler = this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
 		if (handler == null) {
 			error("Unable to locate Spring NamespaceHandler for XML schema namespace [" + namespaceUri + "]", ele);
 			return null;
 		}
+		// ------>
 		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
 	}
 

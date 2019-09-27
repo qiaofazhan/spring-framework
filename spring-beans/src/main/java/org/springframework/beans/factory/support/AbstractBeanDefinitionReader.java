@@ -185,7 +185,7 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 		Assert.notNull(resources, "Resource array must not be null");
 		int count = 0;
 		for (Resource resource : resources) {// 注意这里是个 for 循环，也就是每个文件是一个 resource
-			// 继续往下看
+			// 继续往下看  ------->
 			count += loadBeanDefinitions(resource);
 		}
 		// 最后返回 counter，表示总共加载了多少的 BeanDefinition
@@ -194,6 +194,7 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 
 	@Override
 	public int loadBeanDefinitions(String location) throws BeanDefinitionStoreException {
+		// ------->
 		return loadBeanDefinitions(location, null);
 	}
 
@@ -223,6 +224,7 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 			// Resource pattern matching available.
 			try {
 				Resource[] resources = ((ResourcePatternResolver) resourceLoader).getResources(location);
+				// ------->
 				int count = loadBeanDefinitions(resources);
 				if (actualResources != null) {
 					Collections.addAll(actualResources, resources);
@@ -256,6 +258,7 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 		Assert.notNull(locations, "Location array must not be null");
 		int count = 0;
 		for (String location : locations) {
+			// ------->
 			count += loadBeanDefinitions(location);
 		}
 		return count;

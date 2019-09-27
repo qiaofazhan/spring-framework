@@ -277,12 +277,15 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 */
 	/**
 	 * 扫描bean。这个很重要，如果想要自定义扫描，这个方法就很有参考价值。
+	 * 包括@Component, @Service, @Controller直接 和 @Configuration配置类。
+	 *
+	 * 注意，到这里， @Configuration中的@Bean和@ComponetScan还没处理。
 	 */
 	protected Set<BeanDefinitionHolder> doScan(String... basePackages) {
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
 		for (String basePackage : basePackages) {
-			//----->
+			//----->	//多个包进行循环
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
 			for (BeanDefinition candidate : candidates) {
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);

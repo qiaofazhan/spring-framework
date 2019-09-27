@@ -238,7 +238,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					"postProcessBeanFactory already called on this post-processor against " + registry);
 		}
 		this.registriesPostProcessed.add(registryId);
-         //qfz   ------>解析所有的@Configuration注解标注的类，将它们解析成Beandefinition
+         //qfz   ------>解析所有的@Configuration注解标注的类(包括@ComponentScan  @Bean等)，将它们解析成Beandefinition
 		processConfigBeanDefinitions(registry);
 	}
 
@@ -275,7 +275,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		for (String beanName : candidateNames) {
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
-			// 1.1 判断每个bean定义是否是ConfigurationClass(被@Configuration，@Component，@ComponentScan，@Import，@ImportResource标记的),如果是则会给这个beanDefinition增加一个中的configurationClass属性，避免重复解析
+			// 1.1 判断每个bean定义是否是ConfigurationClass(被@Configuration标记的),如果是则会给这个beanDefinition增加一个中的configurationClass属性，避免重复解析
 			// 如果BeanDefinition 中的configurationClass 属性为full 或者lite ,则意味着已经处理过了,直接跳过
 			if (ConfigurationClassUtils.isFullConfigurationClass(beanDef) ||
 					ConfigurationClassUtils.isLiteConfigurationClass(beanDef)) {
@@ -283,7 +283,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
 			}
-			// 1.2 判断对应bean是否为配置类,如果是,则加入到configCandidates  ---->
+			// 1.2 判断对应bean是否为配置类（@Configuration标注）,如果是,则加入到configCandidates  ---->
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
 			}
@@ -339,9 +339,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 
-		//解析一个ConfigurationClass后可能产生新的ConfigurationClassDefinition,因此需要循环处理
+		//6解析一个ConfigurationClass后可能产生新的ConfigurationClassDefinition,因此需要循环处理
 		do {
-			//qfz---->解析ConfigurationClass的过程,通过条件注解进行解析判断
+			//qfz---->6.1解析ConfigurationClass的过程,通过条件注解进行解析判断
 			parser.parse(candidates);
 			//简单的校验，@Configuration类不允许是final的，@Bean方法必须是可被重写的(可以是私有方法)，静态方法不做处理
 			parser.validate();
@@ -356,8 +356,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
 
-			//qfz----->重新加载BeanDefinition到beanFactory中，即从beanFactory中移除条件注解不匹配的Configuration的BeanDefinition
-			//会装载@Configuration标注的   和@Bean标注的
+
+			//6.2将java配置的BeanDefinition进行注册  --->其实是注册配置类中的@Bean 、@Import、@ImportResource
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);
 

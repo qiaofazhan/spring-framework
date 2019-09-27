@@ -93,7 +93,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	@Override
 	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
 		this.readerContext = readerContext;
-		//  从 xml 根节点开始解析文件 继续往下
+		//  从 xml 根节点开始解析文件 继续往下   ------->
 		doRegisterBeanDefinitions(doc.getDocumentElement());
 	}
 
@@ -153,7 +153,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 
 		preProcessXml(root);// 钩子，是给子类用的钩子方法，鉴于没有被使用到，不是重点
-		// 往下看
+		// 往下看   ------>
 		parseBeanDefinitions(root, this.delegate);
 		postProcessXml(root);// 钩子，是给子类用的钩子方法，鉴于没有被使用到，不是重点
 
@@ -195,8 +195,9 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 						parseDefaultElement(ele, delegate);
 					}
 					else {
-						// 解析其他 namespace 的元素,如经常会使用到的 <mvc />、<task />、<context />、<aop />等。
-						delegate.parseCustomElement(ele);
+						// 解析其他 namespace 的元素,如经常会使用到的 <mvc />、<task />、<context:component-scan />、<aop />等。
+						// <context:component-scan />尤其重要
+						delegate.parseCustomElement(ele);// ------>
 						//假如想分析 <context:property-placeholder location="classpath:xx.properties" /> 的实现原理，就应该到 ContextNamespaceHandler 中找答案。
 					}
 				}

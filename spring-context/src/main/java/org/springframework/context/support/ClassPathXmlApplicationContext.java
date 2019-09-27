@@ -135,6 +135,30 @@ public class ClassPathXmlApplicationContext extends AbstractXmlApplicationContex
 	 * @throws BeansException if context creation failed
 	 * @see #refresh()
 	 */
+
+	/**
+	 * 三种注入方式
+	 * 1.XML配置
+	 *
+	 * 2.注解配置(@Service  @Controller  @Repository 都是 @Component的组合注解)
+	 *    @Component
+	 *    public class Entity {private String name;}
+	 * 3.java配置方式
+	 *
+	 *   @Configuration
+	 *   @ComponentScan("com.moon.springSource.entity")
+	 *   public class Config {
+	 *      @Bean
+	 *      public Xml xml(){
+	 *          return new Xml();
+	 *      }
+	 *   }
+	 *
+	 * 其实笼统的讲，就是2种：基于xmlh和基于java配置的，这两种都涉及到注解配置（@Service @Component等注解）
+	 * ①ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory(); =>得到Map<String, BeanDefinition> (XML方式和注解配置<context:component-scan />)
+	 * ②invokeBeanFactoryPostProcessors(beanFactory)=>得到Map<String, BeanDefinition> (JAVA配置和注解配置@ComponentScan)
+	 *
+	 */
 	public ClassPathXmlApplicationContext(
 			String[] configLocations, boolean refresh, @Nullable ApplicationContext parent)
 			throws BeansException {
