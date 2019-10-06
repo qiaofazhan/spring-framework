@@ -580,6 +580,14 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Last step: publish corresponding event.
 				// 最后，广播事件，ApplicationContext 初始化完成
 				//注册LifecycleProcessor，发布ContextRefreshedEvent。
+				/**
+				 * 初始化生命周期处理器DefaultLifecycleProcessor，DefaultLifecycleProcessor含有start方法和stop方法，spring启动的时候调用start方法开始生命周期，
+				 * spring关闭的时候调用stop方法来结束生命周期，通常用来配置后台程序，启动有一直运行，如一直轮询kafka
+				 * 启动所有实现了Lifecycle接口的类
+				 * 通过spring的事件发布机制发布ContextRefreshedEvent事件，以保证对应的监听器做进一步的处理，即对那种在spring启动后需要处理的一些类，这些类实现了
+				 * ApplicationListener<ContextRefreshedEvent> ,这里就是要触发这些类的执行(执行onApplicationEvent方法)另外，spring的内置Event有ContextClosedEvent、ContextRefreshedEvent、ContextStartedEvent、ContextStoppedEvent、RequestHandleEvent
+				 * 完成初始化，通知生命周期处理器lifeCycleProcessor刷新过程，同时发出ContextRefreshEvent通知其他人
+				 */
 				finishRefresh();
 			}
 
