@@ -358,6 +358,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 
 			//6.2将java配置的BeanDefinition进行注册  --->其实是注册配置类中的@Bean 、@Import、@ImportResource
+			//很重要，mybatis的dao注册、feign的注册等就是在这里执行的。
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);
 

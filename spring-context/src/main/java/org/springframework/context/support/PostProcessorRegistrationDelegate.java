@@ -26,6 +26,8 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -36,6 +38,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
 import org.springframework.core.OrderComparator;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
@@ -224,6 +227,10 @@ final class PostProcessorRegistrationDelegate {
 //		5）、最终注册MergedBeanDefinitionPostProcessor；
 //		6）、注册一个ApplicationListenerDetector；来在Bean创建完成后检查是否是ApplicationListener，如果是
 //			applicationContext.addApplicationListener((ApplicationListener<?>) bean);
+
+// AutowiredAnnotationBeanPostProcessor：处理@Autowired帮助类注入属性
+// RequiredAnnotationBeanPostProcessor：处理@required
+//CommonAnnotationBeanPostProcessor：处理@Resource帮助类注入属性
 
 	public static void registerBeanPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, AbstractApplicationContext applicationContext) {

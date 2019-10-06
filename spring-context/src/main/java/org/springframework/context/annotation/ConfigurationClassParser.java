@@ -193,17 +193,14 @@ class ConfigurationClassParser {
 					parse(bd.getBeanClassName(), holder.getBeanName());
 				}
 			}
-			catch (BeanDefinitionStoreException ex) {
-				throw ex;
-			}
+			catch (BeanDefinitionStoreException ex) { throw ex; }
 			catch (Throwable ex) {
-				throw new BeanDefinitionStoreException(
-						"Failed to parse configuration class [" + bd.getBeanClassName() + "]", ex);
+				throw new BeanDefinitionStoreException("Failed to parse configuration class [" + bd.getBeanClassName() + "]", ex);
 			}
 		}
 
-
 		//2 处理@Import指定的是DeferredImportSelector
+		// 例如SpringBoot的EnableAutoConfigurationImportSelector(AutoConfigurationImportSelector)
 		this.deferredImportSelectorHandler.process();
 	}
 
@@ -308,7 +305,6 @@ class ConfigurationClassParser {
 			processMemberClasses(configClass, sourceClass);
 		}
 
-
 		//qfz  处理所有@PropertySource的解析：
 		for (AnnotationAttributes propertySource : AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), PropertySources.class,
@@ -360,12 +356,11 @@ class ConfigurationClassParser {
 			}
 		}
 
-		// Process any @Import annotations
-		//qfz   这里又是一个递归解析，获取导入的配置类。很多情况下，导入的配置类中会同样包含导入类注解。
+		// qfz  处理@Import，很重要。 这里又是一个递归解析。 很多情况下，导入的配置类中会同样包含导入类注解。----->
+		//很重要，SpringBoot的自动配置、mybatis的dao注册、feign的注册等就是在这里解析的，这里只是解析，但是还没执行。
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
-		// Process any @ImportResource annotations
-		//qfz   解析导入的 xml 配置类
+		// Proce处理 @ImportResource
 		AnnotationAttributes importResource =
 				AnnotationConfigUtils.attributesFor(sourceClass.getMetadata(), ImportResource.class);
 		if (importResource != null) {
@@ -377,15 +372,13 @@ class ConfigurationClassParser {
 			}
 		}
 
-		// Process individual @Bean methods
-		//qfz   解析@Bean标注的方法
-		Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);//将@Bean注解转换转换成一个MethodMetadata对，再将MethodMetadata封装成一个BeanMethod
+		// qfz 解析@Bean标注的方法
+		Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);
 		for (MethodMetadata methodMetadata : beanMethods) {
 			configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
 		}
 
-		// Process default methods on interfaces
-		//qfz 获取接口中的默认方法，1.8以上的处理逻辑
+		//qfz 处理接口中的默认方法（default methods），1.8以上的处理逻辑
 		processInterfaces(configClass, sourceClass);
 
 		// Process superclass, if any
@@ -460,6 +453,7 @@ class ConfigurationClassParser {
 	 * Retrieve the metadata for all <code>@Bean</code> methods.
 	 */
 	private Set<MethodMetadata> retrieveBeanMethodMetadata(SourceClass sourceClass) {
+		//将@Bean注解转换转换成一个MethodMetadata对，再将MethodMetadata封装成一个BeanMethod
 		AnnotationMetadata original = sourceClass.getMetadata();
 		Set<MethodMetadata> beanMethods = original.getAnnotatedMethods(Bean.class.getName());
 		if (beanMethods.size() > 1 && original instanceof StandardAnnotationMetadata) {
@@ -628,37 +622,40 @@ class ConfigurationClassParser {
 			try {
 				for (SourceClass candidate : importCandidates) {
 					if (candidate.isAssignable(ImportSelector.class)) {
-						// Candidate class is an ImportSelector -> delegate to it to determine imports
+						//1.1如果候选类是一个ImportSelector，那么委托它来确定imports
 						Class<?> candidateClass = candidate.loadClass();
 						ImportSelector selector = BeanUtils.instantiateClass(candidateClass, ImportSelector.class);
 						ParserStrategyUtils.invokeAwareMethods(
 								selector, this.environment, this.resourceLoader, this.registry);
+						//qfz  类型判断是否为 ImportSelector类型  EnableAutoConfigurationImportSelector（SpringBoot的自动配置）
 						if (selector instanceof DeferredImportSelector) {
 							this.deferredImportSelectorHandler.handle(
 									configClass, (DeferredImportSelector) selector);
 						}
 						else {
-							//qfz  EnableAutoConfigurationImportSelector
+							//qfz  其他的导入配置
 							String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
 							Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames);
 							processImports(configClass, currentSourceClass, importSourceClasses, false);
 						}
 					}
+					//1.2如果候选类是一个ImportBeanDefinitionRegistrar，那么委托它来注册（delegate to it to register additional bean definitions）
+					//这里是先将ImportBeanDefinitionRegistrar缓存起来，暂时不执行
 					else if (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) {
-						// Candidate class is an ImportBeanDefinitionRegistrar ->
-						// delegate to it to register additional bean definitions
 						Class<?> candidateClass = candidate.loadClass();
+						//直接实例化
 						ImportBeanDefinitionRegistrar registrar =
 								BeanUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class);
 						ParserStrategyUtils.invokeAwareMethods(
 								registrar, this.environment, this.resourceLoader, this.registry);
 						configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());
 					}
+					//1.3 如果候选类既不是ImportSelector，也不是ImportBeanDefinitionRegistrar，则作为一个@Configuration来处理
 					else {
-						// Candidate class not an ImportSelector or ImportBeanDefinitionRegistrar ->
-						// process it as an @Configuration class
+						// Candidate class not an ImportSelector or ImportBeanDefinitionRegistrar ->process it as an @Configuration class
 						this.importStack.registerImport(
 								currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());
+						//递归解析
 						processConfigurationClass(candidate.asConfigClass(configClass));
 					}
 				}
@@ -824,6 +821,7 @@ class ConfigurationClassParser {
 		 * @param importSelector the selector to handle
 		 */
 		public void handle(ConfigurationClass configClass, DeferredImportSelector importSelector) {
+			// 1 把DeferredImportSelector添加到List中缓存起来，不处理
 			DeferredImportSelectorHolder holder = new DeferredImportSelectorHolder(
 					configClass, importSelector);
 			if (this.deferredImportSelectors == null) {
@@ -836,6 +834,7 @@ class ConfigurationClassParser {
 			}
 		}
 
+		//2 处理DeferredImportSelector
 		public void process() {
 			List<DeferredImportSelectorHolder> deferredImports = this.deferredImportSelectors;
 			this.deferredImportSelectors = null;
