@@ -563,9 +563,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
-				// 从方法名就可以知道，典型的模板方法(钩子方法)。没什么深度内容
-				// 具体的子类可以在这里初始化一些特殊的 Bean（在初始化 singleton beans 之前）。
-				onRefresh();
+				// 从方法名就可以知道，典型的模板方法(钩子方法)。
+				// 具体的子类可以在这里初始化一些特殊的 Bean（如Servert3大组件）（在初始化 singleton beans 之前）。
+				onRefresh();//参考SpringBoot2.x的AnnotationConfigServletWebServerApplicationContext
 
 				// Check for listener beans and register them.
 				//注册listener beans， 监听器需要实现 ApplicationListener 接口。这也不是重点，过
