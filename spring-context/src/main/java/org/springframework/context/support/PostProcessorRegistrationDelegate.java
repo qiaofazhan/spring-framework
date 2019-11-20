@@ -142,7 +142,7 @@ final class PostProcessorRegistrationDelegate {
 	 			这里直接循环（+ 排序）调用postProcessor.postProcessBeanDefinitionRegistry(registry);，
 	             直至没有需要处理的BeanDefinitionRegistryPostProcessor类型的为止。。
 
-	             小技巧：因此，如果需要动态的注册anDefinition，可以通过BeanDefinitionRegistryPostProcessor来实现。
+	             小技巧：因此，如果需要动态的注册BeanDefinition，可以通过BeanDefinitionRegistryPostProcessor来实现。
 			 */
 			boolean reiterate = true;
 			while (reiterate) {

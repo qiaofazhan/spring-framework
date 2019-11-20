@@ -776,6 +776,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
 		//注册并执行所有的BeanDefinitionRegistryPostProcessor和BeanFactoryPostProcessors。
 		// 因为BeanFactoryPostProcessor本质也是bean，所以在Spring容器注册的bean定义中扫描BeanFactoryPostProcessors并注册，这个过程中Spring容器创建了BeanFactoryPostProcessors对应的实例。
+		//所以BeanFactoryPostProcessors、BeanDefinitionRegistryPostProcessors会被实例化，所以会走bean的初始化流程，bean相关的初始化方法都会被执行，因此BeanFactoryPostProcessors/BeanDefinitionRegistryPostProcessor可以与Aware等接口一起使用。
         //注意，会解析所有的@Configuration注解标注的类，将它们解析成Beandefinition，对@Configuration做进一步解析（即会解析@ComponentSacn 和@Bean）。
 		//在xml配置解析中，其实已经解析加载了@Configuration注解标注的类（<context:component-scan />），但是没有进一步解析。
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
