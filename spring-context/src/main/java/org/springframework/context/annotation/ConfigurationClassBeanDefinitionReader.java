@@ -115,8 +115,8 @@ class ConfigurationClassBeanDefinitionReader {
 		//条件执行器，到底这个bean要不要注入
 		TrackedConditionEvaluator trackedConditionEvaluator = new TrackedConditionEvaluator();
 		for (ConfigurationClass configClass : configurationModel) {
-			//qfz ---->在解析方法loadBeanDefinitionsForConfigurationClass()中，会获得配置类中定义bean的所有方法，
-			//并调用loadBeanDefinitionsForBeanMethod()方法来进行循环解析：
+			//qfz ---->
+			//当前ConfigurationClass本身（前提是该ConfigurationClass是被@Import导入的）、当前ConfigurationClass中@Bean标注的方法 、当前ConfigurationClass中@Import指定的Registar扫描到的、当前ConfigurationClass中@ImportResource扫描到的
 			loadBeanDefinitionsForConfigurationClass(configClass, trackedConditionEvaluator);
 		}
 	}
@@ -128,6 +128,7 @@ class ConfigurationClassBeanDefinitionReader {
 	private void loadBeanDefinitionsForConfigurationClass(
 			ConfigurationClass configClass, TrackedConditionEvaluator trackedConditionEvaluator) {
 
+		//说明：ConfigurationClass是一个很宽泛的概念，只要是通过配置解析过程中扫描处理的Class，都是ConfigurationClass。
 		if (trackedConditionEvaluator.shouldSkip(configClass)) {//条件注解解析后不匹配,，不进行注入
 			String beanName = configClass.getBeanName();
 			if (StringUtils.hasLength(beanName) && this.registry.containsBeanDefinition(beanName)) {
@@ -137,16 +138,18 @@ class ConfigurationClassBeanDefinitionReader {
 			return;
 		}
 
-		if (configClass.isImported()) {
-			registerBeanDefinitionForImportedConfigurationClass(configClass);
+		if (configClass.isImported()) {//当前ConfigurationClass类(Student)是被其他类@Import而注册的，例如@Import(Strudent.class)
+			registerBeanDefinitionForImportedConfigurationClass(configClass);//注册当前ConfigurationClass
 		}
 
-		//	qfz---->	，获得配置类中定义bean的所有方法，并loadBeanDefinitionsForBeanMethod()方法来进行循环解析，解析时会执行如下校验方法，也正是条件注解的入口：
+		//---->获得配置类中定义bean的所有方法，并loadBeanDefinitionsForBeanMethod()方法来进行循环解析，解析时会执行如下校验方法，也正是条件注解的入口：
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 
-		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
+		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());//如果当前ConfigurationClass被@ImportedResources标注，则解析@ImportedResources
+
+		//解析当前ConfigurationClass上标注的@Import（Registar，Registar，Registar...）;即ImportBeanDefinitionRegistrar的执行入口
 		loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
 	}
 

@@ -69,7 +69,7 @@ final class ConfigurationClass {
 	private final Map<String, Class<? extends BeanDefinitionReader>> importedResources =
 			new LinkedHashMap<>();
 
-	//@Import value属性是ImportBeanDefinitionRegistrar
+	//@Import value属性是ImportBeanDefinitionRegistrar;
 	private final Map<ImportBeanDefinitionRegistrar, AnnotationMetadata> importBeanDefinitionRegistrars =
 			new LinkedHashMap<>();
 

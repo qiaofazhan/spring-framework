@@ -46,6 +46,9 @@ public interface AnnotatedTypeMetadata {
 	 * @param annotationName the fully qualified class name of the annotation
 	 * type to look for
 	 * @return whether a matching annotation is defined
+	 *
+	 * 确定元素是否具有给定类型的注解或元注解。
+	 * 例如某个类被@Configration标注，那么isAnnotated（"Component"）返回true
 	 */
 	boolean isAnnotated(String annotationName);
 
